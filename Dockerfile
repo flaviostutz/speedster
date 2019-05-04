@@ -18,6 +18,9 @@ FROM golang:1.10
 
 ENV LOG_LEVEL ''
 ENV BASE_DIR ''
+ENV MONGO_HOST ''
+ENV MONGO_USERNAME ''
+ENV MONGO_PASSWORD ''
 
 COPY --from=BUILD /go/bin/* /bin/
 ADD startup.sh /

@@ -20,11 +20,15 @@ import (
 const VERSION = "0.0.1"
 
 var (
-	baseDir = ""
+	baseDir    = ""
+	repository Repository
 )
 
 func main() {
 	logLevel := flag.String("loglevel", "debug", "debug, info, warning, error")
+	mongoHost0 := flag.String("mongo-host", "", "MongoDB host")
+	mongoUser0 := flag.String("mongo-username", "", "MongoDB username")
+	mongoPassword0 := flag.String("mongo-password", "", "MongoDB password")
 	baseDir0 := flag.String("base-dir", "", "Base dir")
 	flag.Parse()
 
@@ -49,16 +53,67 @@ func main() {
 		panic("--assets-dir is required")
 	}
 
+	mongoHost := *mongoHost0
+	if mongoHost == "" {
+		panic("--mongo-host is required")
+	}
+
+	mongoUser := *mongoUser0
+	if mongoUser == "" {
+		panic("--mongo-user is required")
+	}
+
+	mongoPassword := *mongoPassword0
+	if mongoPassword == "" {
+		panic("--mongo-password is required")
+	}
+
+	i := 0
+	for {
+		logrus.Infof("Connecting to MongoDB at %s...", mongoHost)
+		rep, err := NewRepository(mongoHost, mongoUser, mongoPassword)
+		if err != nil {
+			logrus.Infof("Could not connect to MongoDB. err=%s", err)
+			if i < 5 {
+				logrus.Infof("Retrying...")
+				time.Sleep(2 * time.Second)
+				i++
+				continue
+			} else {
+				panic("Timeout trying to connect to MongoDB")
+			}
+		}
+		repository = rep
+		break
+	}
+
 	logrus.Infof("Listening on port 50000")
 
 	router := mux.NewRouter()
 	router.HandleFunc("/assets/{name}", handlerAssets).Methods("GET")
 	router.HandleFunc("/download/{sizek}/{name}", handlerDownload).Methods("GET")
 	router.HandleFunc("/upload/{name}", handlerUpload).Methods("POST")
+	router.HandleFunc("/results", handlerResultsPost).Methods("POST")
 	err := http.ListenAndServe("0.0.0.0:50000", router)
 	if err != nil {
 		logrus.Errorf("Error while listening requests: %s", err)
 		os.Exit(1)
+	}
+}
+
+func handlerResultsPost(w http.ResponseWriter, r *http.Request) {
+	decoder := json.NewDecoder(r.Body)
+	b := make(map[string]interface{})
+	err := decoder.Decode(&b)
+	if err != nil {
+		writeResponse(w, http.StatusBadRequest, fmt.Sprintf("Error handling results post. err=%s", err.Error()))
+	}
+
+	//FIXME validate and fix input attribute
+
+	err = repository.CreateTestResults(b)
+	if err != nil {
+		writeResponse(w, http.StatusInternalServerError, fmt.Sprintf("Error storing results. err=%s", err.Error()))
 	}
 }
 

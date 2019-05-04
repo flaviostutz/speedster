@@ -8,6 +8,8 @@ import (
 	_ "github.com/gorilla/mux"
 	_ "github.com/Sirupsen/logrus"
 	_ "github.com/go-cmd/cmd"
+	_ "gopkg.in/mgo.v2"
+	_ "gopkg.in/mgo.v2/bson"	
 )
 
 func main() {
