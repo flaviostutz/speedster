@@ -1,0 +1,15 @@
+package main
+
+import (
+	_ "fmt"
+	_ "flag"
+	_ "net/http"
+	_ "os"
+	_ "github.com/gorilla/mux"
+	_ "github.com/Sirupsen/logrus"
+	_ "github.com/go-cmd/cmd"
+)
+
+func main() {
+	//fmt.Println("This is used for build caching purposes. Should be replaced.")
+}

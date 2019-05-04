@@ -1,0 +1,14 @@
+version: '3.7'
+
+services:
+
+  gittagger:
+    build: .
+    image: flaviostutz/speedster
+    environment:
+      - LOG_LEVEL=debug
+      - BASE_DIR=/opt/
+    ports:
+      - 50000:50000
+
+
