@@ -90,7 +90,8 @@ func main() {
 	logrus.Infof("Listening on port 50000")
 
 	router := mux.NewRouter()
-	router.HandleFunc("/assets/{name}", handlerAssets).Methods("GET")
+	router.HandleFunc("/", handlerRoot).Methods("GET")
+	router.HandleFunc("/{name}", handlerAssets).Methods("GET")
 	router.HandleFunc("/download/{sizek}/{name}", handlerDownload).Methods("GET")
 	router.HandleFunc("/upload/{name}", handlerUpload).Methods("POST")
 	router.HandleFunc("/results", handlerResultsPost).Methods("POST")
@@ -117,6 +118,11 @@ func handlerResultsPost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func handlerRoot(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Location", "/speedster.html")
+	w.WriteHeader(http.StatusTemporaryRedirect)
+}
+
 func handlerAssets(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	name := vars["name"]
@@ -136,7 +142,13 @@ func handlerAssets(w http.ResponseWriter, r *http.Request) {
 
 	if strings.HasSuffix(name, ".jpg") {
 		w.Header().Set("content-type", "image/jpg")
+	} else if strings.HasSuffix(name, ".html") {
+		w.Header().Set("content-type", "text/html")
+	} else if strings.HasSuffix(name, ".js") {
+		w.Header().Set("content-type", "application/javascript")
 	}
+
+	w.Header().Set("Cache-Control", "no-store")
 
 	datab := bytes.NewBuffer(data)
 	totalBytes, err := datab.WriteTo(w)
@@ -162,6 +174,8 @@ func handlerDownload(w http.ResponseWriter, r *http.Request) {
 		writeResponse(w, http.StatusBadRequest, "")
 		return
 	}
+
+	w.Header().Set("Cache-Control", "no-store")
 
 	totalBytes := 0
 	data := make([]byte, 1024)
@@ -216,6 +230,7 @@ func writeResponse(w http.ResponseWriter, statusCode int, message string) {
 	msg := make(map[string]string)
 	msg["message"] = message
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-store")
 	w.WriteHeader(statusCode)
 	json.NewEncoder(w).Encode(msg)
 }

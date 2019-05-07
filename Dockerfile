@@ -24,7 +24,7 @@ ENV MONGO_PASSWORD ''
 
 COPY --from=BUILD /go/bin/* /bin/
 ADD startup.sh /
-ADD image-* /opt/
+ADD assets/* /opt/
 
 EXPOSE 50000
 

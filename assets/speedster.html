@@ -1,0 +1,87 @@
+<html>
+    <head>
+        <script src="/speedster.js"></script>
+        <style type="text/css">
+            body {
+                font-family: helvetica, arial, sans-serif;
+            }
+            #b {
+                color: white;
+                font-size: 1.4em;
+                padding-left: 0.9em;
+                padding-right: 0.9em;
+                padding-top: 0.6em;
+                padding-bottom: 0.6em;
+                background-color: dodgerblue;
+                border-color: gray;
+                border-bottom: 1em;
+            }
+            #log0,#log1,#log2,#log3,#log4,#log5,#log6,#log7,#log8,#log9,#log10,#log11,#log12,#log13,#log14,#log15 {
+                padding-top: 0.1em;
+            }
+        </style>
+    </head>
+    <body>
+        <h3>Teste de conectividade</h3>
+        <button id="b" onclick="test()">Iniciar teste!</button>
+        <div style="padding-top:1em">
+            <div id="log0"></div>
+            <div id="log1"></div>
+            <div id="log2"></div>
+            <div id="log3"></div>
+            <div id="log4"></div>
+            <div id="log5"></div>
+            <div id="log6"></div>
+            <div id="log7"></div>
+            <div id="log8"></div>
+            <div id="log9"></div>
+            <div id="log10"></div>
+            <div id="log11"></div>
+            <div id="log12"></div>
+            <div id="log13"></div>
+            <div id="log14"></div>
+            <div id="log15"></div>
+        </div>
+    </body>
+    <script>
+        function test() {
+            var step = 1
+            var speedster = new Speedster();
+            speedster.testHttpRequest("/download/0/ping.jpg", "GET", null, 30, {
+                onProgress: function(stats) {
+                    var log = "http ping: " + stats.mean() + "ms (stddev="+ stats.stdDev() + "; jitter=" + stats.jitter() + "ms)" 
+                    document.getElementById("log0").innerText = log
+                },
+                onFinish: function(stats) {
+                    var COUNT = 10;
+                    console.log("Starting DOWNLOAD tests...");
+                    speedster.progressiveRequestTest("", "GET", 1, 4, 30*1000, COUNT, 1, 5, {
+                        onStepProgress: function(dataSizeKB, stats) {
+                            var log = "download "+ dataSizeKB +"kB: " + stats.mean() + "ms (" + Math.round((dataSizeKB * 1024) / (stats.mean() / 1000)) + " bps)"
+                            document.getElementById("log" + step).innerText = log
+                        },
+                        onStepFinish: function(dataSizeKB) {
+                            step++;
+                        },
+                        onFinish: function(statsArray) {
+                            console.log("Starting UPLOAD tests...");
+                            speedster.progressiveRequestTest("", "POST", 1, 4, 30*1000, COUNT, 1, 5, {
+                                onStepProgress: function(dataSizeKB, stats) {
+                                    var log = "upload "+ dataSizeKB +"kB: " + stats.mean() + "ms (" + Math.round((dataSizeKB * 1024) / (stats.mean() / 1000)) + " bps)"
+                                    document.getElementById("log" + step).innerText = log
+                                },
+                                onStepFinish: function(dataSizeKB) {
+                                    step++;
+                                },
+                                onFinish: function(statsArray) {
+                                    document.getElementById("log" + step).innerText = "Tests finished"
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+</html>
+
