@@ -2,11 +2,11 @@ package main
 
 import (
 	"bytes"
-	"crypto/rand"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"os"
 	"strconv"
@@ -190,6 +190,9 @@ func handlerDownload(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	//simulate lag
+	time.Sleep(time.Duration((totalBytes+rand.Intn(10000))/1000) * time.Millisecond)
+
 	t := time.Now()
 	elapsedMillis := int64(t.Sub(start) / time.Millisecond)
 	logrus.Debugf("Download end name=%s; size=%d; time=%d ms; bps=%d", name, totalBytes, elapsedMillis, int64(float64(totalBytes)/(float64(elapsedMillis)/1000.0)))
@@ -213,6 +216,9 @@ func handlerUpload(w http.ResponseWriter, r *http.Request) {
 	t := time.Now()
 	elapsedMillis := int64(t.Sub(start) / time.Millisecond)
 	logrus.Debugf("Upload end name=%s; size=%d; time=%d ms; bps=%d", name, totalBytes, elapsedMillis, int64(float64(totalBytes)/(float64(elapsedMillis)/1000.0)))
+
+	//simulate lag
+	time.Sleep(time.Duration((totalBytes+rand.Intn(10000))/1000) * time.Millisecond)
 
 	msg := make(map[string]map[string]interface{})
 	attr := make(map[string]interface{})

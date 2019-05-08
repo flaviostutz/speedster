@@ -22,8 +22,8 @@
         </style>
     </head>
     <body>
-        <h3>Teste de conectividade</h3>
-        <button id="b" onclick="test()">Iniciar teste!</button>
+        <h3>Connectivity tests</h3>
+        <button id="b" onclick="test()">Start test!</button>
         <div style="padding-top:1em">
             <div id="log0"></div>
             <div id="log1"></div>
@@ -44,20 +44,49 @@
         </div>
     </body>
     <script>
+        var speedster = null;
+
         function test() {
+
+            if(speedster!=null) {
+                speedster.cancelOngoingTests();
+                resetView();
+                return
+            }
+
+            var btn = document.getElementById("b");
+            btn.firstChild.data = "Cancel test";
+            btn.setAttribute("style","background-color:red");
+            for(i=0;i<=15;i++) {
+                document.getElementById("log" + i).innerText = "";
+            }
+
+            speedster = new Speedster();
+            var STEP_TIMEOUT=10000
             var step = 1
-            var speedster = new Speedster();
-            speedster.testHttpRequest("/download/0/ping.jpg", "GET", null, 30, {
-                onProgress: function(stats) {
-                    var log = "http ping: " + stats.mean() + "ms (stddev="+ stats.stdDev() + "; jitter=" + stats.jitter() + "ms)" 
+            var MIN_COUNT = 20;
+            var COUNT = 4;//40
+            var MAX_DURATION = 3000;
+            //baseSpeedsterUrl, method, dataSizeKB, minCount, maxCount, maxDuration, nextTimeout, nextStepDataRatio, stepNumber, maxSteps, callback
+            speedster.progressiveRequestTest("", "GET", 0, MIN_COUNT, COUNT, MAX_DURATION, STEP_TIMEOUT, 1, 1, 1, {
+            // speedster.testHttpRequest("/download/0/ping.jpg", "GET", null, MIN_COUNT, COUNT, MAX_DURATION, null, {
+                onStepProgress: function(dataSizeKB, stats) {
+                    var log = "http ping: " + stats.mean().toFixed(0) + "ms (stddev="+ stats.stdDev().toFixed(0) + "; count=" + stats.count() + ")";
                     document.getElementById("log0").innerText = log
                 },
                 onFinish: function(stats) {
-                    var COUNT = 10;
+                    MIN_COUNT = 5;
+                    COUNT = 1;//10
+                    MAX_DURATION = 10000;
                     console.log("Starting DOWNLOAD tests...");
-                    speedster.progressiveRequestTest("", "GET", 1, 4, 30*1000, COUNT, 1, 5, {
+                    if(speedster==null) return;
+                    speedster.progressiveRequestTest("", "GET", 1, MIN_COUNT, COUNT, MAX_DURATION, STEP_TIMEOUT, 10, 1, 5, {
+                        onStart: function() {
+                            document.getElementById("log" + step).innerText = "download..."
+                        },
                         onStepProgress: function(dataSizeKB, stats) {
-                            var log = "download "+ dataSizeKB +"kB: " + stats.mean() + "ms (" + Math.round((dataSizeKB * 1024) / (stats.mean() / 1000)) + " bps)"
+                            var kbps = ((dataSizeKB * 1024 * 10) / (stats.mean()))
+                            var log = "download "+ dataSizeKB +"kB: " + kbps.toFixed(0) + " kbps (mean=" + stats.mean().toFixed(0) + "ms; count=" + stats.count() + ")";
                             document.getElementById("log" + step).innerText = log
                         },
                         onStepFinish: function(dataSizeKB) {
@@ -65,23 +94,77 @@
                         },
                         onFinish: function(statsArray) {
                             console.log("Starting UPLOAD tests...");
-                            speedster.progressiveRequestTest("", "POST", 1, 4, 30*1000, COUNT, 1, 5, {
+                            speedster.progressiveRequestTest("", "POST", 1, MIN_COUNT, COUNT, MAX_DURATION, STEP_TIMEOUT, 10, 1, 5, {
+                                onStart: function() {
+                                    document.getElementById("log" + step).innerText = "upload..."
+                                },
                                 onStepProgress: function(dataSizeKB, stats) {
-                                    var log = "upload "+ dataSizeKB +"kB: " + stats.mean() + "ms (" + Math.round((dataSizeKB * 1024) / (stats.mean() / 1000)) + " bps)"
+                                    var kbps = ((dataSizeKB * 1024 * 10) / (stats.mean()))
+                                    var log = "upload "+ dataSizeKB +"kB: " + kbps.toFixed(0) + " kbps (mean=" + stats.mean().toFixed(0) + "ms; count=" + stats.count() + ")";
                                     document.getElementById("log" + step).innerText = log
                                 },
                                 onStepFinish: function(dataSizeKB) {
                                     step++;
                                 },
                                 onFinish: function(statsArray) {
-                                    document.getElementById("log" + step).innerText = "Tests finished"
+                                    document.getElementById("log" + step).innerText = "Sending test results..."
+                                    speedster.sendResults("", function() {
+                                        log = ">>Tests completed. Thanks!"
+                                        document.getElementById("log" + step).innerText = log
+                                        resetView();
+                                    }, function(status) {
+                                        log = ">>Couldn't send results to server. status=" + status
+                                        document.getElementById("log" + step).innerText = log
+                                        resetView();
+                                    });
+                                },
+                                onError: function(status) {
+                                    log = ">>Could not contact server. status=" + status;
+                                    document.getElementById("log" + step).innerText = log
+                                    resetView();
                                 }
                             });
+                        },
+                        onError: function(status) {
+                            log = ">>Could not contact server. status=" + status;
+                            document.getElementById("log" + step).innerText = log;
+                            resetView();
                         }
                     });
+                },
+                onError: function(status) {
+                    log = ">>Error during tests. status=" + status
+                    document.getElementById("log" + step).innerText = log;
+                    resetView();
                 }
             });
         }
+
+        function resetView() {
+            speedster = null;
+            var btn = document.getElementById("b");
+            btn.firstChild.data = "Start test!";
+            btn.removeAttribute("style");
+        }
+
+        function geopositionToGeojson(geoposition) {
+            return {
+                type: 'Feature',
+                geometry: {
+                    type: 'Point',
+                    coordinates: [geoposition.coords.longitude, geoposition.coords.latitude]
+                },
+                properties: {
+                    timestamp: geoposition.timestamp,
+                    accuracy: geoposition.coords.accuracy,
+                    altitude: geoposition.coords.altitude,
+                    altitudeAccuracy: geoposition.coords.altitudeAccuracy,
+                    heading: geoposition.coords.heading,
+                    speed: geoposition.coords.speed
+                }
+            }
+        }
+
     </script>
 </html>
 
