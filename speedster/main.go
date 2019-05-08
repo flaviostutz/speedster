@@ -191,7 +191,7 @@ func handlerDownload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//simulate lag
-	time.Sleep(time.Duration((totalBytes+rand.Intn(10000))/1000) * time.Millisecond)
+	// time.Sleep(time.Duration((totalBytes+rand.Intn(10000))/1000) * time.Millisecond)
 
 	t := time.Now()
 	elapsedMillis := int64(t.Sub(start) / time.Millisecond)
@@ -218,7 +218,7 @@ func handlerUpload(w http.ResponseWriter, r *http.Request) {
 	logrus.Debugf("Upload end name=%s; size=%d; time=%d ms; bps=%d", name, totalBytes, elapsedMillis, int64(float64(totalBytes)/(float64(elapsedMillis)/1000.0)))
 
 	//simulate lag
-	time.Sleep(time.Duration((totalBytes+rand.Intn(10000))/1000) * time.Millisecond)
+	// time.Sleep(time.Duration((totalBytes+rand.Intn(10000))/1000) * time.Millisecond)
 
 	msg := make(map[string]map[string]interface{})
 	attr := make(map[string]interface{})
