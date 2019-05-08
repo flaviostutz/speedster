@@ -1,5 +1,6 @@
 <html>
     <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <script src="/speedster.js"></script>
         <style type="text/css">
             body {
@@ -7,7 +8,7 @@
             }
             #b {
                 color: white;
-                font-size: 1.4em;
+                font-size: 1.6em;
                 padding-left: 0.9em;
                 padding-right: 0.9em;
                 padding-top: 0.6em;
@@ -22,7 +23,7 @@
         </style>
     </head>
     <body>
-        <h3>Connectivity tests</h3>
+        <h2>Connectivity tests</h2>
         <button id="b" onclick="test()">Start test!</button>
         <div style="padding-top:1em">
             <div id="log0"></div>
@@ -78,9 +79,10 @@
                     MIN_COUNT = 5;
                     COUNT = 1;//10
                     MAX_DURATION = 10000;
+                    MAX_STEPS = 4;
                     console.log("Starting DOWNLOAD tests...");
                     if(speedster==null) return;
-                    speedster.progressiveRequestTest("", "GET", 1, MIN_COUNT, COUNT, MAX_DURATION, STEP_TIMEOUT, 10, 1, 5, {
+                    speedster.progressiveRequestTest("", "GET", 1, MIN_COUNT, COUNT, MAX_DURATION, STEP_TIMEOUT, 10, 1, MAX_STEPS, {
                         onStart: function() {
                             document.getElementById("log" + step).innerText = "download..."
                         },
@@ -94,7 +96,7 @@
                         },
                         onFinish: function(statsArray) {
                             console.log("Starting UPLOAD tests...");
-                            speedster.progressiveRequestTest("", "POST", 1, MIN_COUNT, COUNT, MAX_DURATION, STEP_TIMEOUT, 10, 1, 5, {
+                            speedster.progressiveRequestTest("", "POST", 1, MIN_COUNT, COUNT, MAX_DURATION, STEP_TIMEOUT, 10, 1, MAX_STEPS, {
                                 onStart: function() {
                                     document.getElementById("log" + step).innerText = "upload..."
                                 },

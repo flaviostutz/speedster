@@ -167,6 +167,7 @@ Speedster.prototype.sendResults = function(baseSpeedsterUrl, successCallback, er
                 ipinfo = JSON.parse(this.responseText);
             } else {
                 console.log("Couldn't get IP info");
+                alert("Couldn't get IP info");
             }
 
             //post results
@@ -206,13 +207,14 @@ Speedster.prototype.sendResults = function(baseSpeedsterUrl, successCallback, er
                     var geojson = geopositionToGeojson(position);
                     results.location = geojson;
                     console.log(results);
+                    alert(results);
                     xhttp.send(JSON.stringify(results));
                 });
             } else {
                 console.log("This navigator doesn't support Geolocalization");
+                alert("This navigator doesn't support Geolocalization");
                 xhttp.send(JSON.stringify(results));
             }
-
 
         }
     }
