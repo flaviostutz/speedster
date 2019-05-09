@@ -31,7 +31,7 @@ Speedster.prototype.testHttpRequest = function(url, method, data, minCount, maxC
                     active = false
                     console.log("Request took too much time. method="+ method +"; url=" + url +"; duration=" + duration + "ms");
                 }
-                if((stats.stdDev()/stats.mean()) < 0.05 && stats.count()>minCount-1) {
+                if((stats.stdDev()/stats.mean()) < 0.1 && stats.count()>minCount-1) {
                     active = false
                     console.log("Request duration converged. method=" + method +"; url=" + url +"; stats=" + stats.tostring());
                 }

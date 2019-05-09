@@ -63,13 +63,18 @@
             }
 
             speedster = new Speedster();
-            var STEP_TIMEOUT=10000
+            
+            //if you change these values, remember to change startup.sh accordingly
             var step = 1
             var MIN_COUNT = 20;
-            var COUNT = 4;//40
-            var MAX_DURATION = 3000;
+            var MAX_COUNT = 40;
+            var MAX_DURATION = 5000;
+            var STEP_TIMEOUT = (MAX_DURATION * MAX_COUNT);
+            var NEXT_STEP_DATA_RATIO = 1;
+            var FIRST_STEP = 1;
+            var MAX_STEPS = 1;
             //baseSpeedsterUrl, method, dataSizeKB, minCount, maxCount, maxDuration, nextTimeout, nextStepDataRatio, stepNumber, maxSteps, callback
-            speedster.progressiveRequestTest("", "GET", 0, MIN_COUNT, COUNT, MAX_DURATION, STEP_TIMEOUT, 1, 1, 1, {
+            speedster.progressiveRequestTest("", "GET", 0, MIN_COUNT, MAX_COUNT, MAX_DURATION, STEP_TIMEOUT, NEXT_STEP_DATA_RATIO, FIRST_STEP, MAX_STEPS, {
             // speedster.testHttpRequest("/download/0/ping.jpg", "GET", null, MIN_COUNT, COUNT, MAX_DURATION, null, {
                 onStepProgress: function(dataSizeKB, stats) {
                     var log = "http ping: " + stats.mean().toFixed(0) + "ms (stddev="+ stats.stdDev().toFixed(0) + "; count=" + stats.count() + ")";
@@ -77,12 +82,15 @@
                 },
                 onFinish: function(stats) {
                     MIN_COUNT = 5;
-                    COUNT = 1;//10
-                    MAX_DURATION = 10000;
+                    MAX_COUNT = 10;
+                    MAX_DURATION = 15000;
+                    STEP_TIMEOUT = (MAX_DURATION * MAX_COUNT);
+                    NEXT_STEP_DATA_RATIO = 10;
+                    FIRST_STEP = 1;
                     MAX_STEPS = 4;
                     console.log("Starting DOWNLOAD tests...");
                     if(speedster==null) return;
-                    speedster.progressiveRequestTest("", "GET", 1, MIN_COUNT, COUNT, MAX_DURATION, STEP_TIMEOUT, 10, 1, MAX_STEPS, {
+                    speedster.progressiveRequestTest("", "GET", 1, MIN_COUNT, MAX_COUNT, MAX_DURATION, STEP_TIMEOUT, NEXT_STEP_DATA_RATIO, FIRST_STEP, MAX_STEPS, {
                         onStart: function() {
                             document.getElementById("log" + step).innerText = "download..."
                         },
@@ -96,7 +104,7 @@
                         },
                         onFinish: function(statsArray) {
                             console.log("Starting UPLOAD tests...");
-                            speedster.progressiveRequestTest("", "POST", 1, MIN_COUNT, COUNT, MAX_DURATION, STEP_TIMEOUT, 10, 1, MAX_STEPS, {
+                            speedster.progressiveRequestTest("", "POST", 1, MIN_COUNT, MAX_COUNT, MAX_DURATION, STEP_TIMEOUT, 10, 1, MAX_STEPS, {
                                 onStart: function() {
                                     document.getElementById("log" + step).innerText = "upload..."
                                 },

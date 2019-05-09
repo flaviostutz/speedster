@@ -13,8 +13,8 @@ services:
       - MONGO_PASSWORD=root
     ports:
       - 50000:50000
-    volumes:
-      - //Users/flaviostutz/Documents/development/flaviostutz/speedster/assets:/opt
+    # volumes:
+    #   - //Users/flaviostutz/Documents/development/flaviostutz/speedster/assets:/opt
 
   mongo:
     image: mongo:4.1.10
