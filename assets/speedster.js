@@ -121,6 +121,9 @@ Speedster.prototype.progressiveRequestTest = function (baseSpeedsterUrl, method,
 }
 
 Speedster.prototype.sendResults = function(baseSpeedsterUrl, successCallback, errorCallback) {
+    console.log("sendResults");
+    var _self = this;
+
     //prepare statistics
     var statsArray2 = this.statsArray.map(function (a) {
         return {
@@ -158,20 +161,19 @@ Speedster.prototype.sendResults = function(baseSpeedsterUrl, successCallback, er
 
 
 
-    //retrieve more info about our IP
+    console.log("retrieve more info about our IP");
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
         if (this.readyState == 4) {
             var ipinfo = {};
             if (this.status == 200 || this.status == 201) {
+                console.log("Got ip info");
                 ipinfo = JSON.parse(this.responseText);
             } else {
                 console.log("Couldn't get IP info");
-                alert("Couldn't get IP info");
             }
 
             //post results
-            var _self = this;
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function () {
                 if (this.readyState == 4) {
@@ -199,20 +201,23 @@ Speedster.prototype.sendResults = function(baseSpeedsterUrl, successCallback, er
                 "http-download-kbps": sd.max(),
                 "http-upload-kbps": su.max(),
                 "ipinfo": ipinfo,
-                "stats": statsArray2
+                "stats": statsArray2,
+                "browser-user-agent": navigator.userAgent
             }
 
+            console.log("Get geolocation");
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function showPosition(position) {
                     var geojson = geopositionToGeojson(position);
                     results.location = geojson;
                     console.log(results);
-                    alert(results);
+                    xhttp.send(JSON.stringify(results));
+                }, function(error) {
+                    console.log("Error getting geolocation. err=" + error);
                     xhttp.send(JSON.stringify(results));
                 });
             } else {
                 console.log("This navigator doesn't support Geolocalization");
-                alert("This navigator doesn't support Geolocalization");
                 xhttp.send(JSON.stringify(results));
             }
 
