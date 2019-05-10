@@ -130,12 +130,12 @@ Speedster.prototype.sendResults = function(baseSpeedsterUrl, successCallback, er
             url:a.url,
             method:a.method,
             dataSizeKB:a.dataSizeKB,
-            max: a.max().toFixed(2),
-            min:a.min().toFixed(2),
-            mean:a.mean().toFixed(2),
+            max:a.max(),
+            min: a.min(),
+            mean:a.mean(),
             count:a.count(),
-            stddev:a.stdDev().toFixed(2),
-            kbps:(a.dataSizeKB*1024*10/(a.mean())).toFixed(2)
+            stddev:a.stdDev(),
+            kbps:(a.dataSizeKB*1024*10/(a.mean()))
         }
     });
 
@@ -214,10 +214,12 @@ Speedster.prototype.sendResults = function(baseSpeedsterUrl, successCallback, er
                     xhttp.send(JSON.stringify(results));
                 }, function(error) {
                     console.log("Error getting geolocation. err=" + error);
+                    alert('Error getting geolocalization. err=' + error);
                     xhttp.send(JSON.stringify(results));
                 });
             } else {
                 console.log("This navigator doesn't support Geolocalization");
+                alert('Geolocalization is unavailable');
                 xhttp.send(JSON.stringify(results));
             }
 
@@ -238,7 +240,7 @@ var Stats = function() {
 }
 
 Stats.prototype.sample = function(value) {
-    // console.log("SAMPLE " + this.items.length);
+    // console.log("SAMPLE " + value);
     this.items.push(value);
 }
 Stats.prototype.sum = function() {

@@ -103,14 +103,13 @@ func main() {
 }
 
 func handlerResultsPost(w http.ResponseWriter, r *http.Request) {
+	//FIXME validate and fix input attributes
 	decoder := json.NewDecoder(r.Body)
 	b := make(map[string]interface{})
 	err := decoder.Decode(&b)
 	if err != nil {
 		writeResponse(w, http.StatusBadRequest, fmt.Sprintf("Error handling results post. err=%s", err.Error()))
 	}
-
-	//FIXME validate and fix input attribute
 
 	err = repository.CreateTestResults(b)
 	if err != nil {
@@ -173,6 +172,10 @@ func handlerDownload(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeResponse(w, http.StatusBadRequest, "")
 		return
+	}
+
+	if strings.HasSuffix(name, ".jpg") {
+		w.Header().Set("content-type", "image/jpg")
 	}
 
 	w.Header().Set("Cache-Control", "no-store")
