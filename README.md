@@ -1,4 +1,7 @@
 # speedster
+
+[<img src="https://img.shields.io/docker/automated/flaviostutz/speedster"/>](https://hub.docker.com/r/flaviostutz/speedster)
+
 Javascript based bandwidth tester that runs on html devices.
 
 You can deploy Speedster backend on any server so that you can check for connectivity specifically to that server.
